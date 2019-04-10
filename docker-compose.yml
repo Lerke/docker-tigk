@@ -1,0 +1,62 @@
+version: '2'
+
+services:
+  influxdb:
+    image: influxdb:1.7
+    container_name: influxdb
+    restart: always
+    ports:
+      - "8083:8083"
+      - "8086:8086"
+      - "8090:8090"
+    volumes:
+      - ./data/influxdb/data:/var/lib/influxdb
+      - ./data/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
+  
+  telegraf:
+    image: telegraf:1.10
+    depends_on: [ 'influxdb' ]
+    container_name: telegraf
+    restart: always
+    links:
+      - influxdb
+    volumes:
+      - ./data/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    
+  chronograf:
+    image: chronograf:1.7
+    depends_on: [ 'influxdb' ]
+    container_name: chronograf
+    restart: always
+    volumes:
+      - ./data/chronograf:/var/lib/chronograf
+    ports:
+      - "8888:8888"
+    links:
+      - influxdb
+
+  kapacitor:
+    image: kapacitor:1.5
+    container_name: kapacitor
+    restart: always
+    depends_on: [ 'influxdb' ]
+    links:
+      - influxdb
+      - chronograf
+    volumes:
+      - ./data/kapacitor:/var/lib/kapacitor
+    ports:
+      - "9092:9092"
+    environment:
+      - KAPACITOR_HOSTNAME=${HOSTNAME}
+      - KAPACITOR_INFLUXDB_0_URLS_0=http://influxdb:8086
+
+  dashboard:
+    image: hypriot/rpi-dockerui
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "80:9000"
+
+
