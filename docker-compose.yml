@@ -23,15 +23,16 @@ services:
     volumes:
       - ./data/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
     
-  chronograf:
-    image: chronograf:1.7
+  grafana:
+    image: grafana/grafana:latest
     depends_on: [ 'influxdb' ]
-    container_name: chronograf
+    container_name: grafana
     restart: always
+    user: "472"
     volumes:
-      - ./data/chronograf:/var/lib/chronograf
+      - ./data/grafana:/var/lib/grafana
     ports:
-      - "8888:8888"
+      - "3000:3000"
     links:
       - influxdb
 
@@ -42,7 +43,6 @@ services:
     depends_on: [ 'influxdb' ]
     links:
       - influxdb
-      - chronograf
     volumes:
       - ./data/kapacitor:/var/lib/kapacitor
     ports:

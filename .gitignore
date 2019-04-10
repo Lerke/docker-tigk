@@ -1,1 +1,3 @@
 .vscode
+data/grafana/plugins/**/*.*
+!data/grafana/plugins/.gitkeep
